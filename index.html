@@ -2,528 +2,447 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>¡Feliz Cumpleaños Saúl Cristian! 🤘🔥</title>
-  
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Metal+Mania&family=Oswald:wght@400;600;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Gastos Semanales</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <style>
-    :root {
-      --bg-dark: #0a0a0c;
-      --panel-bg: #141419;
-      --metal-red: #ff1a40;
-      --metal-orange: #ff6600;
-      --metal-gold: #ffb700;
-      --text-main: #f0f0f5;
-      --text-muted: #a0a0b0;
-      --border-glow: rgba(255, 26, 64, 0.4);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: 'Montserrat', sans-serif;
-      overflow-x: hidden;
-      padding-bottom: 50px;
-    }
-
-    #fx-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .app-container {
-      position: relative;
-      z-index: 2;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 15px;
-    }
-
-    header {
-      text-align: center;
-      padding: 25px 10px 15px;
-    }
-
-    .subtitle-badge {
-      display: inline-block;
-      background: linear-gradient(90deg, var(--metal-red), var(--metal-orange));
-      color: #fff;
-      font-family: 'Oswald', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      padding: 4px 14px;
-      border-radius: 20px;
-      margin-bottom: 12px;
-      box-shadow: 0 0 15px var(--border-glow);
-    }
-
-    h1.metal-title {
-      font-family: 'Metal Mania', cursive;
-      font-size: 2.8rem;
-      line-height: 1.1;
-      color: #fff;
-      text-shadow: 0 0 10px var(--metal-red), 0 0 20px var(--metal-orange);
-      margin-bottom: 8px;
-    }
-
-    @media (min-width: 600px) {
-      h1.metal-title {
-        font-size: 4rem;
+  <!-- html2pdf.js para exportar reportes en PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
       }
     }
-
-    p.tagline {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      font-weight: 500;
-    }
-
-    .card {
-      background: var(--panel-bg);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(10px);
-    }
-
-    .card-title {
-      font-family: 'Oswald', sans-serif;
-      font-size: 1.25rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--metal-gold);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    .carousel-container {
-      position: relative;
-      width: 100%;
-      border-radius: 12px;
-      overflow: hidden;
-      aspect-ratio: 4 / 3;
-      background: #000;
-      touch-action: pan-y;
-      border: 2px solid rgba(255, 26, 64, 0.3);
-    }
-
-    .carousel-track {
-      display: flex;
-      width: 100%;
-      height: 100%;
-      transition: transform 0.4s ease-out;
-    }
-
-    .carousel-slide {
-      min-width: 100%;
-      height: 100%;
-      position: relative;
-    }
-
-    .carousel-slide img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .slide-caption {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 15px 12px;
-      background: linear-gradient(transparent, rgba(0,0,0,0.9));
-      color: #fff;
-      font-size: 0.9rem;
-      font-weight: 600;
-      text-align: center;
-    }
-
-    .carousel-btn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(0,0,0,0.6);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.2);
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 5;
-      font-size: 1.1rem;
-    }
-
-    .carousel-btn.prev { left: 10px; }
-    .carousel-btn.next { right: 10px; }
-
-    .upload-box {
-      margin-top: 12px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-upload {
-      background: rgba(255,255,255,0.05);
-      border: 1px dashed var(--metal-orange);
-      color: var(--metal-gold);
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    audio {
-      width: 100%;
-      border-radius: 8px;
-      margin-top: 10px;
-      outline: none;
-    }
-
-    .soundboard-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    @media (min-width: 500px) {
-      .soundboard-grid {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-
-    .pad-btn {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 15px 10px;
-      text-align: center;
-      color: var(--text-main);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .pad-btn i {
-      font-size: 1.4rem;
-      color: var(--metal-orange);
-    }
-
-    .pad-btn span {
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .greeting-box {
-      font-size: 0.95rem;
-      line-height: 1.6;
-      color: #e0e0e0;
-      border-left: 3px solid var(--metal-red);
-      padding-left: 15px;
-      margin-bottom: 15px;
-    }
-
-    .btn-whatsapp {
-      background: #25D366;
-      color: #fff;
-      border: none;
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-    }
-
-    footer {
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.8rem;
-      padding-top: 10px;
-    }
-  </style>
+  </script>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 font-sans pb-12 min-h-screen">
 
-  <canvas id="fx-canvas"></canvas>
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-brand-600 to-indigo-800 text-white shadow-lg sticky top-0 z-30">
+    <div class="max-w-md mx-auto px-4 py-4 flex justify-between items-center">
+      <div>
+        <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
+          <i class="fa-solid me-1 fa-wallet text-amber-300"></i> Mi Control de Gastos
+        </h1>
+        <p class="text-xs text-indigo-100" id="header-period-label">Cargando periodo...</p>
+      </div>
+      <button onclick="toggleHistoryModal()" class="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm transition flex items-center gap-1.5">
+        <i class="fa-solid fa-clock-rotate-left"></i> Historial
+      </button>
+    </div>
+  </header>
 
-  <div class="app-container">
-    
-    <header>
-      <span class="subtitle-badge">🤘 Heavy Metal Birthday 🤘</span>
-      <h1 class="metal-title">SAÚL CRISTIAN</h1>
-      <p class="tagline">¡Que el rock y el metal retumben hoy en tu honor!</p>
-    </header>
+  <main class="max-w-md mx-auto px-4 pt-4 space-y-5">
 
-    <!-- CAROUSEL DE FOTOS -->
-    <div class="card">
-      <div class="card-title">
-        <i class="fa-solid fa-images"></i>
-        <span>Galería de Rocker</span>
+    <!-- Tarjeta Principal de Presupuesto Semanal -->
+    <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+      <div class="flex justify-between items-start mb-3">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Saldo Disponible (Semana Actual)</span>
+          <div class="text-3xl font-extrabold text-slate-900 mt-0.5" id="weekly-remaining">S/ 100.00</div>
+        </div>
+        <span id="budget-badge" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full">
+          OK
+        </span>
       </div>
 
-      <div class="carousel-container" id="carousel">
-        <div class="carousel-track" id="carouselTrack">
-          <div class="carousel-slide">
-            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80" alt="Guitarra Metal">
-            <div class="slide-caption">🔥 ¡Feliz Cumpleaños Saúl Cristian! 🔥</div>
+      <!-- Progreso -->
+      <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden mb-4">
+        <div id="weekly-progress-bar" class="bg-brand-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 text-xs">
+        <div class="bg-slate-50 p-2.5 rounded-xl">
+          <span class="text-slate-500 block">Gastado Semana:</span>
+          <span class="font-bold text-slate-700 text-sm" id="weekly-spent">S/ 0.00</span>
+        </div>
+        <div class="bg-slate-50 p-2.5 rounded-xl">
+          <span class="text-slate-500 block">Recibido Domingo:</span>
+          <span class="font-bold text-emerald-600 text-sm" id="weekly-income">S/ 100.00</span>
+        </div>
+      </div>
+
+      <!-- Botones de Acción de la Semana -->
+      <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-2">
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="shareWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition shadow-sm">
+            <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
+          </button>
+          <button onclick="downloadPDF()" class="bg-red-600 hover:bg-red-700 text-white font-medium text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition shadow-sm">
+            <i class="fa-solid fa-file-pdf text-sm"></i> Reporte PDF
+          </button>
+        </div>
+        
+        <button onclick="rechargeWeek()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition">
+          <i class="fa-solid fa-arrows-rotate text-amber-400"></i> Reiniciar Semana (Guardar e Iniciar con S/ 100)
+        </button>
+      </div>
+    </section>
+
+    <!-- Formulario para Registrar Gastos -->
+    <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+      <h2 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+        <i class="fa-solid fa-plus-circle text-brand-600"></i> Registrar Nuevo Gasto
+      </h2>
+
+      <form id="expense-form" onsubmit="addExpense(event)" class="space-y-3">
+        
+        <!-- Fecha y Categoría -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-500 mb-1 block">Fecha</label>
+            <input type="date" id="expense-date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs focus:ring-2 focus:ring-brand-500 outline-none">
           </div>
-          <div class="carousel-slide">
-            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80" alt="Concierto Rock">
-            <div class="slide-caption">🎸 ¡Que nunca paren los riffs y la buena música! 🎸</div>
-          </div>
-          <div class="carousel-slide">
-            <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=800&q=80" alt="Luces de Concierto">
-            <div class="slide-caption">🚀 Un año más rompiéndola al máximo nivel.</div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-500 mb-1 block">Categoría</label>
+            <select id="expense-category" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs focus:ring-2 focus:ring-brand-500 outline-none">
+              <option value="Desayuno">🍳 Desayuno</option>
+              <option value="Almuerzo">🍲 Almuerzo</option>
+              <option value="Cena">🍕 Cena</option>
+              <option value="Taxi / Pasajes">🚕 Taxi / Pasajes</option>
+              <option value="Bebidas / Antojos">🥤 Bebidas / Antojos</option>
+              <option value="Otros">🛒 Otros Gastos</option>
+            </select>
           </div>
         </div>
 
-        <button class="carousel-btn prev" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
-        <button class="carousel-btn next" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
-      </div>
+        <!-- Monto -->
+        <div>
+          <label class="text-[11px] font-semibold text-slate-500 mb-1 block">Monto en Soles (S/)</label>
+          <input type="number" id="expense-amount" step="0.10" min="0.10" placeholder="Ej: 2.50 ó 10" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-brand-500 outline-none">
+        </div>
 
-      <div class="upload-box">
-        <label for="imgUploader" class="btn-upload">
-          <i class="fa-solid fa-cloud-arrow-up"></i>
-          <span>Añadir tus fotos con Saúl</span>
-        </label>
-        <input type="file" id="imgUploader" accept="image/*" multiple style="display: none;">
-      </div>
-    </div>
+        <!-- Botones de montos rápidos -->
+        <div class="flex gap-1.5 flex-wrap">
+          <button type="button" onclick="setQuickAmount(2.00)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium px-2.5 py-1 rounded-lg">S/ 2.00</button>
+          <button type="button" onclick="setQuickAmount(2.50)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium px-2.5 py-1 rounded-lg">S/ 2.50</button>
+          <button type="button" onclick="setQuickAmount(5.00)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium px-2.5 py-1 rounded-lg">S/ 5.00</button>
+          <button type="button" onclick="setQuickAmount(8.00)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium px-2.5 py-1 rounded-lg">S/ 8.00</button>
+          <button type="button" onclick="setQuickAmount(10.00)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium px-2.5 py-1 rounded-lg">S/ 10.00</button>
+        </div>
 
-    <!-- REPRODUCTOR DE MÚSICA MP3 -->
-    <div class="card">
-      <div class="card-title">
-        <i class="fa-solid fa-compact-disc"></i>
-        <span>Música de Fondo (MP3)</span>
-      </div>
+        <!-- Detalle opcional -->
+        <div>
+          <label class="text-[11px] font-semibold text-slate-500 mb-1 block">Detalle o Nota (Opcional)</label>
+          <input type="text" id="expense-note" placeholder="Ej: Pan con palta, Taxi a la oficina..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 outline-none">
+        </div>
 
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
-        Esta página reproduce tu archivo <strong>cancion.mp3</strong> en la misma carpeta:
-      </p>
-
-      <!-- Reproductor HTML5 apuntando a cancion.mp3 -->
-      <audio controls id="mainAudio">
-        <source src="cancion.mp3" type="audio/mpeg">
-        Tu navegador no soporta el reproductor de audio.
-      </audio>
-
-      <div style="margin-top: 15px; text-align: center;">
-        <label for="audioUploader" class="btn-upload">
-          <i class="fa-solid fa-music"></i>
-          <span>Probar otra canción desde tu cel/PC</span>
-        </label>
-        <input type="file" id="audioUploader" accept="audio/*" style="display: none;">
-      </div>
-    </div>
-
-    <!-- SOUNDBOARD INTERACTIVO -->
-    <div class="card">
-      <div class="card-title">
-        <i class="fa-solid fa-drum"></i>
-        <span>Efectos Metaleros</span>
-      </div>
-
-      <div class="soundboard-grid">
-        <button class="pad-btn" onclick="triggerFx()">
-          <i class="fa-solid fa-fire-flame-curved"></i>
-          <span>Fuego & Púas</span>
+        <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-md shadow-brand-500/20">
+          + Agregar Gasto
         </button>
-        <button class="pad-btn" onclick="alert('🤘 ¡HOY SE ROCKEA EN HONOR A SAÚL CRISTIAN! 🤘')">
-          <i class="fa-solid fa-people-group"></i>
-          <span>Grito Rocker</span>
+      </form>
+    </section>
+
+    <!-- Desglose por Días de la Semana Actual -->
+    <section class="space-y-3">
+      <div class="flex justify-between items-center">
+        <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-calendar-days text-brand-600"></i> Gastos de la Semana
+        </h2>
+        <span class="text-[11px] text-slate-500 font-medium" id="total-days-count">0 días registrados</span>
+      </div>
+
+      <div id="daily-expenses-list" class="space-y-3">
+        <!-- Generado dinámicamente -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal de Historial de Semanas Guardadas -->
+  <div id="history-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">Historial de Semanas Archivadas</h3>
+          <p class="text-[11px] text-slate-500">Tus registros anteriores no se borran</p>
+        </div>
+        <button onclick="toggleHistoryModal()" class="text-slate-400 hover:text-slate-600 text-sm p-1">
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-    </div>
 
-    <!-- SALUDO & MENSAJE -->
-    <div class="card">
-      <div class="card-title">
-        <i class="fa-solid fa-envelope-open-text"></i>
-        <span>Dedicatoria Especial</span>
+      <div id="history-list" class="p-4 overflow-y-auto space-y-3 flex-1">
+        <!-- Semanas archivadas -->
       </div>
-
-      <div class="greeting-box">
-        <p><strong>¡Hermano Saúl Cristian!</strong> 🤘🎉</p>
-        <p>Hoy en tu cumpleaños te deseo lo mejor de lo mejor. Que este nuevo año venga cargado de salud, proyectos cumplidos y sobre todo muchísima música de la buena, riffs potentes y conciertos inolvidables. ¡A celebrar como se debe!</p>
-      </div>
-
-      <button class="btn-whatsapp" onclick="sendWhatsApp()">
-        <i class="fa-brands fa-whatsapp"></i>
-        <span>Enviar Saludo por WhatsApp</span>
-      </button>
     </div>
-
-    <footer>
-      Hecho especialmente para Saúl Cristian • Happy Birthday 🤘
-    </footer>
-
   </div>
 
   <script>
-    /* 1. ANIMACIÓN CANVAS */
-    const canvas = document.getElementById('fx-canvas');
-    const ctx = canvas.getContext('2d');
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
+    // Configuración Inicial de Estado
+    const STORAGE_KEY = 'gastos_app_data_v2';
+    
+    let appData = {
+      currentCycle: {
+        id: Date.now(),
+        startDate: new Date().toISOString().split('T')[0],
+        income: 100.00,
+        expenses: []
+      },
+      archivedCycles: []
+    };
 
-    window.addEventListener('resize', () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+      renderApp();
     });
 
-    class Particle {
-      constructor() { this.reset(); }
-      reset() {
-        this.x = Math.random() * width;
-        this.y = -20;
-        this.size = Math.random() * 12 + 6;
-        this.speedY = Math.random() * 3 + 1;
-        this.speedX = (Math.random() - 0.5) * 1.5;
-        this.rot = Math.random() * Math.PI * 2;
-        this.rotSpeed = (Math.random() - 0.5) * 0.1;
-        this.color = Math.random() > 0.4 ? '#ff1a40' : '#ff6600';
-      }
-      update() {
-        this.y += this.speedY;
-        this.x += this.speedX;
-        this.rot += this.rotSpeed;
-        if (this.y > height + 20) this.reset();
-      }
-      draw() {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.rot);
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.moveTo(0, -this.size / 2);
-        ctx.lineTo(this.size / 2, this.size / 2);
-        ctx.lineTo(0, this.size / 1.2);
-        ctx.lineTo(-this.size / 2, this.size / 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
+    function loadData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try { appData = JSON.parse(saved); } catch (e) { console.error(e); }
       }
     }
 
-    const particles = Array.from({ length: 25 }, () => new Particle());
-    function animateFX() {
-      ctx.clearRect(0, 0, width, height);
-      particles.forEach(p => { p.update(); p.draw(); });
-      requestAnimationFrame(animateFX);
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     }
-    animateFX();
 
-    function triggerFx() {
-      for(let i=0; i<15; i++) {
-        setTimeout(() => { particles.push(new Particle()); }, i * 50);
+    function setQuickAmount(val) {
+      document.getElementById('expense-amount').value = val.toFixed(2);
+    }
+
+    function addExpense(e) {
+      e.preventDefault();
+      const date = document.getElementById('expense-date').value;
+      const category = document.getElementById('expense-category').value;
+      const amount = parseFloat(document.getElementById('expense-amount').value);
+      const note = document.getElementById('expense-note').value.trim();
+
+      if (!date || isNaN(amount) || amount <= 0) return;
+
+      const newExpense = {
+        id: Date.now(),
+        date,
+        category,
+        amount,
+        note
+      };
+
+      appData.currentCycle.expenses.push(newExpense);
+      saveData();
+      renderApp();
+
+      document.getElementById('expense-amount').value = '';
+      document.getElementById('expense-note').value = '';
+    }
+
+    function deleteExpense(id) {
+      appData.currentCycle.expenses = appData.currentCycle.expenses.filter(x => x.id !== id);
+      saveData();
+      renderApp();
+    }
+
+    function rechargeWeek() {
+      if (appData.currentCycle.expenses.length === 0) {
+        alert('Aún no has registrado gastos en esta semana.');
+        return;
       }
-    }
 
-    /* 2. CARRUSEL CON SWIPE */
-    const track = document.getElementById('carouselTrack');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    let currentIndex = 0;
-
-    function updateCarousel() {
-      track.style.transform = `translateX(-${currentIndex * 100}%)`;
-    }
-
-    nextBtn.addEventListener('click', () => {
-      currentIndex = (currentIndex + 1) % track.children.length;
-      updateCarousel();
-    });
-
-    prevBtn.addEventListener('click', () => {
-      currentIndex = (currentIndex - 1 + track.children.length) % track.children.length;
-      updateCarousel();
-    });
-
-    let startX = 0;
-    const carouselEl = document.getElementById('carousel');
-    carouselEl.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
-    carouselEl.addEventListener('touchend', (e) => {
-      let diff = startX - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 40) {
-        if (diff > 0) currentIndex = (currentIndex + 1) % track.children.length;
-        else currentIndex = (currentIndex - 1 + track.children.length) % track.children.length;
-        updateCarousel();
-      }
-    }, { passive: true });
-
-    document.getElementById('imgUploader').addEventListener('change', (e) => {
-      const files = e.target.files;
-      if (!files.length) return;
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const newSlide = document.createElement('div');
-          newSlide.className = 'carousel-slide';
-          newSlide.innerHTML = `<img src="${event.target.result}" alt="Foto"><div class="slide-caption">⚡ ¡Momentos con Saúl! ⚡</div>`;
-          track.appendChild(newSlide);
+      if (confirm('¿Deseas guardar el historial de esta semana e iniciar un nuevo presupuesto de S/ 100?')) {
+        appData.archivedCycles.unshift({ ...appData.currentCycle, endDate: new Date().toISOString().split('T')[0] });
+        appData.currentCycle = {
+          id: Date.now(),
+          startDate: new Date().toISOString().split('T')[0],
+          income: 100.00,
+          expenses: []
         };
-        reader.readAsDataURL(file);
-      });
-    });
-
-    /* 3. PROBAR MÚSICA LOCAL DESDE ARCHIVO SELECCIONADO */
-    document.getElementById('audioUploader').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const audioEl = document.getElementById('mainAudio');
-        audioEl.src = URL.createObjectURL(file);
-        audioEl.play();
+        saveData();
+        renderApp();
+        alert('¡Semana archivada con éxito! Has iniciado una nueva semana con S/ 100.00.');
       }
-    });
-
-    /* 4. SALUDO WHATSAPP */
-    function sendWhatsApp() {
-      const msg = encodeURIComponent("¡Feliz Cumpleaños Saúl Cristian! 🤘🔥 Te preparé esta página especial de Rock & Metal para celebrar tu día. ¡Que sigan los riffs al máximo!");
-      window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
     }
-  </script>
-</body>
-</html>
+
+    function renderApp() {
+      const expenses = appData.currentCycle.expenses;
+      const totalSpent = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+      const remaining = appData.currentCycle.income - totalSpent;
+      const percent = Math.min(100, (totalSpent / appData.currentCycle.income) * 100);
+
+      document.getElementById('weekly-spent').textContent = `S/ ${totalSpent.toFixed(2)}`;
+      document.getElementById('weekly-remaining').textContent = `S/ ${remaining.toFixed(2)}`;
+      document.getElementById('weekly-progress-bar').style.width = `${percent}%`;
+
+      const badge = document.getElementById('budget-badge');
+      if (remaining < 0) {
+        badge.textContent = 'Excedido';
+        badge.className = 'bg-red-100 text-red-800 text-xs font-bold px-2.5 py-1 rounded-full';
+      } else {
+        badge.textContent = 'OK';
+        badge.className = 'bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full';
+      }
+
+      // Agrupar por días
+      const grouped = {};
+      expenses.forEach(exp => {
+        if (!grouped[exp.date]) grouped[exp.date] = [];
+        grouped[exp.date].push(exp);
+      });
+
+      const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
+      document.getElementById('total-days-count').textContent = `${sortedDates.length} día(s)`;
+
+      const container = document.getElementById('daily-expenses-list');
+      if (sortedDates.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white p-6 rounded-2xl text-center text-slate-400 text-xs border border-slate-100">
+            No hay gastos registrados en esta semana.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = sortedDates.map(dateStr => {
+        const dayName = getDayName(dateStr);
+        const dayTotal = grouped[dateStr].reduce((a, c) => a + c.amount, 0);
+
+        const itemsHtml = grouped[dateStr].map(item => `
+          <div class="flex justify-between items-center py-2 border-b border-slate-50 last:border-none text-xs">
+            <div>
+              <span class="font-semibold text-slate-700">${item.category}</span>
+              ${item.note ? `<p class="text-[10px] text-slate-400">${item.note}</p>` : ''}
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-800">S/ ${item.amount.toFixed(2)}</span>
+              <button onclick="deleteExpense(${item.id})" class="text-slate-300 hover:text-red-500 transition">
+                <i class="fa-solid fa-trash text-[11px]"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        return `
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+            <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-100">
+              <span class="font-bold text-xs text-brand-700 uppercase">${dayName} ${formatShortDate(dateStr)}</span>
+              <span class="text-xs font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">Total: S/ ${dayTotal.toFixed(2)}</span>
+            </div>
+            ${itemsHtml}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getDayName(dateString) {
+      const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      const date = new Date(dateString + 'T00:00:00');
+      return days[date.getDay()];
+    }
+
+    function formatShortDate(dateString) {
+      const [y, m, d] = dateString.split('-');
+      return `${d}/${m}`;
+    }
+
+    function generateReportText(cycle) {
+      const expenses = cycle.expenses;
+      const totalSpent = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+      const remaining = cycle.income - totalSpent;
+
+      const grouped = {};
+      expenses.forEach(exp => {
+        if (!grouped[exp.date]) grouped[exp.date] = [];
+        grouped[exp.date].push(exp);
+      });
+
+      let text = `📋 *REPORTE DE GASTOS SEMANALES*\n`;
+      text += `-----------------------------------\n`;
+
+      Object.keys(grouped).sort().forEach(dateStr => {
+        const dayName = getDayName(dateStr);
+        const dayTotal = grouped[dateStr].reduce((a, c) => a + c.amount, 0);
+        text += `\n📅 *${dayName.toUpperCase()} ${formatShortDate(dateStr)}*\n`;
+        grouped[dateStr].forEach(item => {
+          text += ` • ${item.category}: S/ ${item.amount.toFixed(2)}${item.note ? ` (${item.note})` : ''}\n`;
+        });
+        text += ` 💰 *Subtotal día:* S/ ${dayTotal.toFixed(2)}\n`;
+      });
+
+      text += `\n-----------------------------------\n`;
+      text += `💵 *Presupuesto Recibido:* S/ ${cycle.income.toFixed(2)}\n`;
+      text += `📊 *Total Gastado:* S/ ${totalSpent.toFixed(2)}\n`;
+      text += `📉 *Saldo Restante:* S/ ${remaining.toFixed(2)}\n`;
+
+      return text;
+    }
+
+    function shareWhatsApp() {
+      const text = generateReportText(appData.currentCycle);
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function downloadPDF() {
+      const cycle = appData.currentCycle;
+      const expenses = cycle.expenses;
+      const totalSpent = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+      const remaining = cycle.income - totalSpent;
+
+      const element = document.createElement('div');
+      element.className = 'p-6 font-sans text-slate-800 bg-white';
+      element.innerHTML = `
+        <h1 style="font-size: 20px; font-weight: bold; color: #4338ca; text-align: center; margin-bottom: 5px;">Reporte Semanal de Gastos</h1>
+        <p style="font-size: 12px; color: #64748b; text-align: center; margin-bottom: 20px;">Generado el ${new Date().toLocaleDateString('es-PE')}</p>
+
+        <div style="display: flex; justify-content: space-between; background-color: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+          <div><strong>Presupuesto:</strong> S/ ${cycle.income.toFixed(2)}</div>
+          <div><strong>Total Gastado:</strong> S/ ${totalSpent.toFixed(2)}</div>
+          <div><strong>Saldo Restante:</strong> S/ ${remaining.toFixed(2)}</div>
+        </div>
+
+        ${Object.keys(expenses.reduce((a, c) => { (a[c.date] = a[c.date] || []).push(c); return a; }, {})).map(dateStr => `
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 13px; font-weight: bold; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+              ${getDayName(dateStr)}${formatShortDate(dateStr)}
+            </h3>
+            <ul style="font-size: 11px; padding-left: 15px; margin-top: 5px;">
+              ${expenses.filter(x => x.date === dateStr).map(x => `
+                <li style="margin-bottom: 3px;">
+                  <strong>${x.category}:</strong> S/ ${x.amount.toFixed(2)} ${x.note ? `<em>(${x.note})</em>` : ''}
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `).join('')}
+      `;
+
+      const opt = {
+        margin:       10,
+        filename:     `Reporte_Gastos_${new Date().toISOString().split('T')[0]}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function toggleHistoryModal() {
+      const modal = document.getElementById('history-modal');
+      modal.classList.toggle('hidden');
+
+      if (!modal.classList.contains('hidden')) {
+        const container = document.getElementById('history-list');
+        if (appData.archivedCycles.length === 0) {
+          container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">No hay semanas archivadas aún.</p>';
+          return;
+        }
+
+        container.innerHTML = appData.archivedCycles.map((cycle, i) => {
+          const total = cycle.expenses.reduce((a, c) => a + c.amount, 0);
+          return `
+            <div class="bg-sl
