@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>¡Feliz Cumpleaños Saúl Cristian! 🤘🔥</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Metal+Mania&family=Oswald:wght@400;600;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-dark: #0a0a0c;
+      --panel-bg: #141419;
+      --metal-red: #ff1a40;
+      --metal-orange: #ff6600;
+      --metal-gold: #ffb700;
+      --text-main: #f0f0f5;
+      --text-muted: #a0a0b0;
+      --border-glow: rgba(255, 26, 64, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Montserrat', sans-serif;
+      overflow-x: hidden;
+      padding-bottom: 50px;
+    }
+
+    #fx-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 2;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 15px;
+    }
+
+    header {
+      text-align: center;
+      padding: 25px 10px 15px;
+    }
+
+    .subtitle-badge {
+      display: inline-block;
+      background: linear-gradient(90deg, var(--metal-red), var(--metal-orange));
+      color: #fff;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 0 15px var(--border-glow);
+    }
+
+    h1.metal-title {
+      font-family: 'Metal Mania', cursive;
+      font-size: 2.8rem;
+      line-height: 1.1;
+      color: #fff;
+      text-shadow: 0 0 10px var(--metal-red), 0 0 20px var(--metal-orange);
+      margin-bottom: 8px;
+    }
+
+    @media (min-width: 600px) {
+      h1.metal-title {
+        font-size: 4rem;
+      }
+    }
+
+    p.tagline {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .card {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+    }
+
+    .card-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.25rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--metal-gold);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .carousel-container {
+      position: relative;
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+      background: #000;
+      touch-action: pan-y;
+      border: 2px solid rgba(255, 26, 64, 0.3);
+    }
+
+    .carousel-track {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.4s ease-out;
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .carousel-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .slide-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 15px 12px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.9));
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+      font-size: 1.1rem;
+    }
+
+    .carousel-btn.prev { left: 10px; }
+    .carousel-btn.next { right: 10px; }
+
+    .upload-box {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-upload {
+      background: rgba(255,255,255,0.05);
+      border: 1px dashed var(--metal-orange);
+      color: var(--metal-gold);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    audio {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+      outline: none;
+    }
+
+    .soundboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (min-width: 500px) {
+      .soundboard-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .pad-btn {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 15px 10px;
+      text-align: center;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pad-btn i {
+      font-size: 1.4rem;
+      color: var(--metal-orange);
+    }
+
+    .pad-btn span {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .greeting-box {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #e0e0e0;
+      border-left: 3px solid var(--metal-red);
+      padding-left: 15px;
+      margin-bottom: 15px;
+    }
+
+    .btn-whatsapp {
+      background: #25D366;
+      color: #fff;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+    }
+
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      padding-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="fx-canvas"></canvas>
+
+  <div class="app-container">
+    
+    <header>
+      <span class="subtitle-badge">🤘 Heavy Metal Birthday 🤘</span>
+      <h1 class="metal-title">SAÚL CRISTIAN</h1>
+      <p class="tagline">¡Que el rock y el metal retumben hoy en tu honor!</p>
+    </header>
+
+    <!-- CAROUSEL DE FOTOS -->
+    <div class="card">
+      <div class="card-title">
+        <i class="fa-solid fa-images"></i>
+        <span>Galería de Rocker</span>
+      </div>
+
+      <div class="carousel-container" id="carousel">
+        <div class="carousel-track" id="carouselTrack">
+          <div class="carousel-slide">
+            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80" alt="Guitarra Metal">
+            <div class="slide-caption">🔥 ¡Feliz Cumpleaños Saúl Cristian! 🔥</div>
+          </div>
+          <div class="carousel-slide">
+            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80" alt="Concierto Rock">
+            <div class="slide-caption">🎸 ¡Que nunca paren los riffs y la buena música! 🎸</div>
+          </div>
+          <div class="carousel-slide">
+            <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=800&q=80" alt="Luces de Concierto">
+            <div class="slide-caption">🚀 Un año más rompiéndola al máximo nivel.</div>
+          </div>
+        </div>
+
+        <button class="carousel-btn prev" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="carousel-btn next" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+
+      <div class="upload-box">
+        <label for="imgUploader" class="btn-upload">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Añadir tus fotos con Saúl</span>
+        </label>
+        <input type="file" id="imgUploader" accept="image/*" multiple style="display: none;">
+      </div>
+    </div>
+
+    <!-- REPRODUCTOR DE MÚSICA MP3 -->
+    <div class="card">
+      <div class="card-title">
+        <i class="fa-solid fa-compact-disc"></i>
+        <span>Música de Fondo (MP3)</span>
+      </div>
+
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+        Esta página reproduce tu archivo <strong>cancion.mp3</strong> en la misma carpeta:
+      </p>
+
+      <!-- Reproductor HTML5 apuntando a cancion.mp3 -->
+      <audio controls id="mainAudio">
+        <source src="cancion.mp3" type="audio/mpeg">
+        Tu navegador no soporta el reproductor de audio.
+      </audio>
+
+      <div style="margin-top: 15px; text-align: center;">
+        <label for="audioUploader" class="btn-upload">
+          <i class="fa-solid fa-music"></i>
+          <span>Probar otra canción desde tu cel/PC</span>
+        </label>
+        <input type="file" id="audioUploader" accept="audio/*" style="display: none;">
+      </div>
+    </div>
+
+    <!-- SOUNDBOARD INTERACTIVO -->
+    <div class="card">
+      <div class="card-title">
+        <i class="fa-solid fa-drum"></i>
+        <span>Efectos Metaleros</span>
+      </div>
+
+      <div class="soundboard-grid">
+        <button class="pad-btn" onclick="triggerFx()">
+          <i class="fa-solid fa-fire-flame-curved"></i>
+          <span>Fuego & Púas</span>
+        </button>
+        <button class="pad-btn" onclick="alert('🤘 ¡HOY SE ROCKEA EN HONOR A SAÚL CRISTIAN! 🤘')">
+          <i class="fa-solid fa-people-group"></i>
+          <span>Grito Rocker</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- SALUDO & MENSAJE -->
+    <div class="card">
+      <div class="card-title">
+        <i class="fa-solid fa-envelope-open-text"></i>
+        <span>Dedicatoria Especial</span>
+      </div>
+
+      <div class="greeting-box">
+        <p><strong>¡Hermano Saúl Cristian!</strong> 🤘🎉</p>
+        <p>Hoy en tu cumpleaños te deseo lo mejor de lo mejor. Que este nuevo año venga cargado de salud, proyectos cumplidos y sobre todo muchísima música de la buena, riffs potentes y conciertos inolvidables. ¡A celebrar como se debe!</p>
+      </div>
+
+      <button class="btn-whatsapp" onclick="sendWhatsApp()">
+        <i class="fa-brands fa-whatsapp"></i>
+        <span>Enviar Saludo por WhatsApp</span>
+      </button>
+    </div>
+
+    <footer>
+      Hecho especialmente para Saúl Cristian • Happy Birthday 🤘
+    </footer>
+
+  </div>
+
+  <script>
+    /* 1. ANIMACIÓN CANVAS */
+    const canvas = document.getElementById('fx-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = -20;
+        this.size = Math.random() * 12 + 6;
+        this.speedY = Math.random() * 3 + 1;
+        this.speedX = (Math.random() - 0.5) * 1.5;
+        this.rot = Math.random() * Math.PI * 2;
+        this.rotSpeed = (Math.random() - 0.5) * 0.1;
+        this.color = Math.random() > 0.4 ? '#ff1a40' : '#ff6600';
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        this.rot += this.rotSpeed;
+        if (this.y > height + 20) this.reset();
+      }
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rot);
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.moveTo(0, -this.size / 2);
+        ctx.lineTo(this.size / 2, this.size / 2);
+        ctx.lineTo(0, this.size / 1.2);
+        ctx.lineTo(-this.size / 2, this.size / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    const particles = Array.from({ length: 25 }, () => new Particle());
+    function animateFX() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animateFX);
+    }
+    animateFX();
+
+    function triggerFx() {
+      for(let i=0; i<15; i++) {
+        setTimeout(() => { particles.push(new Particle()); }, i * 50);
+      }
+    }
+
+    /* 2. CARRUSEL CON SWIPE */
+    const track = document.getElementById('carouselTrack');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    let currentIndex = 0;
+
+    function updateCarousel() {
+      track.style.transform = `translateX(-${currentIndex * 100}%)`;
+    }
+
+    nextBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % track.children.length;
+      updateCarousel();
+    });
+
+    prevBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + track.children.length) % track.children.length;
+      updateCarousel();
+    });
+
+    let startX = 0;
+    const carouselEl = document.getElementById('carousel');
+    carouselEl.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
+    carouselEl.addEventListener('touchend', (e) => {
+      let diff = startX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) currentIndex = (currentIndex + 1) % track.children.length;
+        else currentIndex = (currentIndex - 1 + track.children.length) % track.children.length;
+        updateCarousel();
+      }
+    }, { passive: true });
+
+    document.getElementById('imgUploader').addEventListener('change', (e) => {
+      const files = e.target.files;
+      if (!files.length) return;
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const newSlide = document.createElement('div');
+          newSlide.className = 'carousel-slide';
+          newSlide.innerHTML = `<img src="${event.target.result}" alt="Foto"><div class="slide-caption">⚡ ¡Momentos con Saúl! ⚡</div>`;
+          track.appendChild(newSlide);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    /* 3. PROBAR MÚSICA LOCAL DESDE ARCHIVO SELECCIONADO */
+    document.getElementById('audioUploader').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const audioEl = document.getElementById('mainAudio');
+        audioEl.src = URL.createObjectURL(file);
+        audioEl.play();
+      }
+    });
+
+    /* 4. SALUDO WHATSAPP */
+    function sendWhatsApp() {
+      const msg = encodeURIComponent("¡Feliz Cumpleaños Saúl Cristian! 🤘🔥 Te preparé esta página especial de Rock & Metal para celebrar tu día. ¡Que sigan los riffs al máximo!");
+      window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+    }
+  </script>
+</body>
+</html>
