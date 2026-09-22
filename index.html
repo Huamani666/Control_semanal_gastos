@@ -395,7 +395,10 @@
 
     function getTodayFormatted() {
       const today = new Date();
-      return today.toISOString().split('T')[0];
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
 
     // Formatear fechas para encabezados elegantes: "LUNES, 21 DE SETIEMBRE"
@@ -408,7 +411,6 @@
       const options = { weekday: 'long', day: 'numeric', month: 'long' };
       let formatted = dateObj.toLocaleDateString('es-PE', options).toUpperCase();
       
-      // Reemplazo estándar de septiembre por setiembre si se prefiere
       formatted = formatted.replace('SEPTIEMBRE', 'SETIEMBRE');
       return formatted;
     }
@@ -512,7 +514,9 @@
     }
 
     function handleExpenseSave() {
-      const date = document.getElementById('expenseDate').value || getTodayFormatted();
+      // CORRECCIÓN CLAVE: Lee la fecha seleccionada en el formulario de registro
+      const dateInput = document.getElementById('expenseDate').value;
+      const date = dateInput ? dateInput : getTodayFormatted();
       const category = document.getElementById('expenseCategory').value;
       const concept = document.getElementById('expenseConcept').value.trim() || category;
       const amount = parseFloat(document.getElementById('expenseAmount').value);
@@ -537,12 +541,17 @@
       document.getElementById('expenseConcept').value = '';
       document.getElementById('expenseAmount').value = '';
 
+      // Ajusta automáticamente la vista de "Ver día" para que coincida con la fecha agregada
+      document.getElementById('filterHoyDate').value = date;
+
       renderAll();
       showToast("Gasto guardado con éxito");
     }
 
     function quickAdd(category, amount, concept) {
-      const date = getTodayFormatted();
+      // Toma la fecha actualmente seleccionada en el campo fecha manual
+      const dateInput = document.getElementById('expenseDate').value;
+      const date = dateInput ? dateInput : getTodayFormatted();
       const activeCycle = getActiveCycle();
       
       const newExpense = {
@@ -555,6 +564,9 @@
 
       activeCycle.expenses.unshift(newExpense);
       saveData();
+
+      document.getElementById('filterHoyDate').value = date;
+
       renderAll();
       showToast(`+ S/ ${amount.toFixed(2)} registrado (${category})`);
     }
@@ -713,7 +725,6 @@
       }
     }
 
-    // FORMATO PARA ENVIAR POR WHATSAPP AGRUPADO POR DÍAS (Lunes 24, tanto en almuerzo, etc.)
     function shareWhatsApp() {
       const activeCycle = getActiveCycle();
       const totalSpent = activeCycle.expenses.reduce((a, b) => a + b.amount, 0);
@@ -783,7 +794,6 @@
       });
     }
 
-    // DISEÑO DEL PDF IDÉNTICO A LA IMAGEN PROPORCIONADA
     function exportCyclePDF() {
       const activeCycle = getActiveCycle();
       const content = document.getElementById('pdfReportContent');
@@ -818,7 +828,6 @@
 
           daysHtml += `
             <div style="margin-bottom: 12px; font-family: system-ui, -apple-system, sans-serif;">
-              <!-- Cabecera del Día -->
               <div style="background-color: #f1f5f9; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px;">
                 <span style="font-size: 11px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 4px;">
                   <span style="color: #e11d48; font-size: 10px;">📍</span> ${formatLongDate(date)}
@@ -827,7 +836,6 @@
                   Total Día: S/ ${dayTotal.toFixed(2)}
                 </span>
               </div>
-              <!-- Lista de ítems del día -->
               <div style="background-color: #ffffff;">
                 ${rowsHtml}
               </div>
@@ -838,13 +846,11 @@
 
       content.innerHTML = `
         <div style="font-family: system-ui, -apple-system, sans-serif; padding: 10px; color: #1e293b;">
-          <!-- Título -->
           <h2 style="font-size: 18px; font-weight: 600; color: #334155; margin: 0 0 4px 0;">Reporte de Gastos - ${activeCycle.name}</h2>
           <p style="font-size: 10px; color: #94a3b8; margin: 0 0 12px 0;">Emisión: ${activeCycle.startDate}</p>
           
           <div style="border-top: 2px solid #10b981; margin-bottom: 12px;"></div>
 
-          <!-- Resumen Verde Menta -->
           <div style="background-color: #f0fdf4; border-radius: 6px; padding: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 11px; border: 1px solid #dcfce7;">
             <div>
               <span style="color: #475569;">Presupuesto:</span> 
@@ -860,10 +866,8 @@
             </div>
           </div>
 
-          <!-- Subtítulo de Detalle -->
           <h3 style="font-size: 12px; font-weight: 600; color: #64748b; margin: 0 0 10px 0;">Detalle de Gasto por Día</h3>
 
-          <!-- Bloque de Gastos -->
           <div>
             ${daysHtml}
           </div>
@@ -888,7 +892,7 @@
 
       let html = `
         <div style="font-family: system-ui, -apple-system, sans-serif; padding: 10px; color: #1e293b;">
-          <h2 style="font-size: 18px; font-weight: 600; color: #334155; margin-0 0 12px 0;">Resumen Consolidado del Mes</h2>
+          <h2 style="font-size: 18px; font-weight: 600; color: #334155; margin: 0 0 12px 0;">Resumen Consolidado del Mes</h2>
           <div style="border-top: 2px solid #10b981; margin-bottom: 16px;"></div>
       `;
 
@@ -958,7 +962,6 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
-    // Inicializar app al cargar ventana
     window.onload = initApp;
   </script>
 </body>
