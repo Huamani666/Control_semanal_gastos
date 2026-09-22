@@ -1,498 +1,965 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full bg-slate-950 text-slate-100">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Control Privado de Gastos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Control Privado de Gastos - Perú (S/)</title>
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Inter Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- html2pdf.js para exportación a PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+            }
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    body {
-      background-color: #0b1329;
-      color: #f3f4f6;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    button, input, select {
+      touch-action: manipulation;
     }
-    .card {
-      background-color: #111c38;
-      border: 1px solid #1e2d54;
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
     }
-    .btn-green {
-      background-color: #059669;
-      color: white;
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
     }
-    .btn-green:active {
-      background-color: #047857;
-    }
-    .btn-quick {
-      background-color: #162447;
-      border: 1px solid #223668;
-    }
-    .btn-quick:active {
-      background-color: #1f3363;
-    }
-    .tab-active {
-      background-color: #059669 !important;
-      color: white !important;
+    ::-webkit-scrollbar-thumb {
+      background: rgba(51, 65, 85, 0.8);
+      border-radius: 4px;
     }
   </style>
 </head>
-<body class="pb-12">
+<body class="h-full flex flex-col font-sans antialiased bg-slate-950 text-slate-100 selection:bg-brand-500 selection:text-white pb-20 sm:pb-0">
 
-  <!-- ENCABEZADO -->
-  <header class="p-4 bg-[#0d1730] border-b border-[#1e2d54] sticky top-0 z-50 shadow-md">
+  <!-- HEADER TIPO APP MÓVIL -->
+  <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30 px-4 py-3 shadow-lg">
     <div class="max-w-md mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold text-lg shadow">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-md shadow-emerald-900/40 text-lg">
           S/
         </div>
         <div>
-          <h1 class="font-bold text-base text-white leading-tight">Mi Control Privado</h1>
-          <p id="header-date" class="text-xs text-emerald-400 font-medium">Cargando fecha...</p>
+          <h1 class="text-base font-bold tracking-tight text-white leading-none">Mi Control Privado</h1>
+          <p class="text-xs text-slate-400 font-medium mt-0.5" id="headerDateText">Cargando fecha...</p>
         </div>
       </div>
-      <button onclick="resetCycle()" class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-700 px-3 py-1.5 rounded-lg font-semibold active:scale-95 transition">
-        + S/ 100
+      <button type="button" onclick="toggleSettingsModal()" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition-all active:scale-95" title="Ajustes y Privacidad">
+        <i data-lucide="settings" class="w-5 h-5"></i>
       </button>
     </div>
   </header>
 
-  <main class="max-w-md mx-auto p-4 space-y-4">
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-1 overflow-y-auto px-3 py-4 max-w-md mx-auto w-full space-y-4">
 
-    <!-- TARJETA PRESUPUESTO CICLO 6 DÍAS -->
-    <div class="card p-4 rounded-2xl shadow-lg space-y-3">
-      <div class="flex justify-between items-end">
+    <!-- TARJETA PRINCIPAL: CICLO DE 6 DÍAS / S/ 100 -->
+    <div class="bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/80 rounded-2xl p-4 shadow-xl relative overflow-hidden">
+      <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+      <!-- Selector de Ciclo Activo -->
+      <div class="flex items-center justify-between mb-3 border-b border-slate-700/60 pb-2.5">
+        <div class="flex items-center space-x-2">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <i data-lucide="repeat" class="w-3 h-3 mr-1"></i> Ciclo Activo
+          </span>
+          <span id="cycleLabel" class="text-xs font-bold text-slate-200">Ciclo 1</span>
+        </div>
+        <select id="cycleSelector" onchange="changeCycle(this.value)" class="bg-slate-950 text-xs font-medium text-emerald-400 border border-slate-700 rounded-lg px-2 py-1 focus:outline-none focus:border-emerald-500">
+        </select>
+      </div>
+
+      <!-- Valores Principales -->
+      <div class="grid grid-cols-2 gap-3 mb-3">
         <div>
-          <span class="text-xs text-gray-400 block font-medium">Disponible (Ciclo 6 días)</span>
-          <span id="disp-val" class="text-3xl font-extrabold text-emerald-400">S/ 100.00</span>
+          <p class="text-xs text-slate-400 font-medium">Presupuesto Recibido</p>
+          <p class="text-xl font-bold text-white mt-0.5">S/ <span id="cycleBudgetDisplay">100.00</span></p>
         </div>
         <div class="text-right">
-          <span class="text-xs text-gray-400 block font-medium">Gastado</span>
-          <span id="gast-val" class="text-base font-bold text-gray-200">S/ 0.00</span>
+          <p class="text-xs text-slate-400 font-medium">Disponible en Ciclo</p>
+          <p id="remainingDisplay" class="text-xl font-extrabold text-emerald-400 mt-0.5">S/ 100.00</p>
         </div>
       </div>
 
       <!-- Barra de Progreso -->
-      <div class="w-full bg-gray-800 rounded-full h-3 overflow-hidden p-0.5 border border-gray-700">
-        <div id="progress-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+      <div class="space-y-1.5">
+        <div class="flex justify-between text-xs text-slate-400 font-medium">
+          <span>Gastado: <strong id="cycleSpentDisplay" class="text-slate-200">S/ 0.00</strong></span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden p-0.5 border border-slate-700/50">
+          <div id="progressBar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
       </div>
 
-      <!-- Botones de Acción / Exportación -->
-      <div class="grid grid-cols-2 gap-2 pt-1">
-        <button onclick="sendWhatsApp()" class="flex items-center justify-center gap-2 bg-emerald-700 text-white text-xs py-2 px-3 rounded-xl font-semibold active:scale-95 transition">
-          📲 Enviar WhatsApp
+      <!-- BOTONES RÁPIDOS DE ACCIÓN -->
+      <div class="mt-3 pt-3 border-t border-slate-700/60 grid grid-cols-3 gap-2">
+        <button type="button" onclick="startNewCycle()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold py-2 px-1 rounded-xl transition-all shadow flex items-center justify-center space-x-1 active:scale-95">
+          <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+          <span>+ S/ 100</span>
         </button>
-        <button onclick="exportPDF()" class="flex items-center justify-center gap-2 bg-slate-700 text-white text-xs py-2 px-3 rounded-xl font-semibold active:scale-95 transition">
-          📄 PDF Ciclo
+        
+        <button type="button" onclick="shareWhatsApp()" class="bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 text-[11px] font-bold py-2 px-1 rounded-xl transition-all shadow flex items-center justify-center space-x-1 active:scale-95 border border-emerald-500/30">
+          <i data-lucide="send" class="w-3.5 h-3.5 text-emerald-300"></i>
+          <span>WhatsApp</span>
+        </button>
+
+        <button type="button" onclick="exportCyclePDF()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold py-2 px-1 rounded-xl transition-all shadow flex items-center justify-center space-x-1 active:scale-95 border border-slate-700">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 text-rose-400"></i>
+          <span>PDF Ciclo</span>
         </button>
       </div>
     </div>
 
     <!-- PESTAÑAS DE NAVEGACIÓN -->
-    <div class="grid grid-cols-3 gap-1 bg-[#0d1730] p-1 rounded-xl border border-[#1e2d54]">
-      <button id="tab-hoy" onclick="switchTab('hoy')" class="py-2 text-xs font-bold rounded-lg text-gray-400 tab-active transition">
-        Hoy
+    <div class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+      <button type="button" onclick="switchTab('hoy')" id="tabHoy" class="py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1 bg-emerald-600 text-white shadow">
+        <i data-lucide="sun" class="w-3.5 h-3.5"></i>
+        <span>Hoy</span>
       </button>
-      <button id="tab-historial" onclick="switchTab('historial')" class="py-2 text-xs font-bold rounded-lg text-gray-400 transition">
-        Historial Días
+      <button type="button" onclick="switchTab('historial')" id="tabHistorial" class="py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1 text-slate-400 hover:text-slate-200">
+        <i data-lucide="history" class="w-3.5 h-3.5"></i>
+        <span>Historial Días</span>
       </button>
-      <button id="tab-mes" onclick="switchTab('mes')" class="py-2 text-xs font-bold rounded-lg text-gray-400 transition">
-        Resumen Mes
+      <button type="button" onclick="switchTab('mes')" id="tabMes" class="py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1 text-slate-400 hover:text-slate-200">
+        <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+        <span>Resumen Mes</span>
       </button>
     </div>
 
-    <!-- VISTA 1: HOY (ENTRADA RÁPIDA Y MANUAL) -->
-    <div id="view-hoy" class="space-y-4">
-      <!-- Botones Rápidos -->
-      <div class="card p-4 rounded-2xl">
-        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Botones Rápidos</h2>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="addQuick('Desayuno', 3)" class="btn-quick p-3 rounded-xl text-left flex justify-between items-center">
-            <div>
-              <span class="block text-xs text-gray-400">☕ Desayuno</span>
-              <span class="font-bold text-sm text-emerald-400">S/ 3.00</span>
-            </div>
-            <span class="text-lg text-emerald-500 font-bold">+</span>
-          </button>
+    <!-- ACCESOS RÁPIDOS A 1 TOQUE -->
+    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 shadow-md">
+      <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+        <span class="flex items-center"><i data-lucide="zap" class="w-3.5 h-3.5 mr-1 text-amber-400"></i> Botones Rápida Entrada</span>
+        <span class="text-[10px] text-slate-500 font-normal">Toca para agregar</span>
+      </p>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <button type="button" onclick="quickAdd('Almuerzo', 10.00, 'Almuerzo')" class="flex items-center justify-between p-2 bg-slate-800/90 hover:bg-slate-800 border border-slate-700/70 rounded-xl transition-all active:scale-95 text-left">
+          <div>
+            <p class="text-[11px] text-slate-400 font-medium">🍲 Almuerzo</p>
+            <p class="text-xs font-bold text-emerald-400">S/ 10.00</p>
+          </div>
+          <div class="w-5 h-5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xs font-bold">+</div>
+        </button>
 
-          <button onclick="addQuick('Almuerzo', 10)" class="btn-quick p-3 rounded-xl text-left flex justify-between items-center">
-            <div>
-              <span class="block text-xs text-gray-400">🍲 Almuerzo</span>
-              <span class="font-bold text-sm text-emerald-400">S/ 10.00</span>
-            </div>
-            <span class="text-lg text-emerald-500 font-bold">+</span>
-          </button>
+        <button type="button" onclick="quickAdd('Cena', 10.00, 'Cena')" class="flex items-center justify-between p-2 bg-slate-800/90 hover:bg-slate-800 border border-slate-700/70 rounded-xl transition-all active:scale-95 text-left">
+          <div>
+            <p class="text-[11px] text-slate-400 font-medium">🌙 Cena</p>
+            <p class="text-xs font-bold text-emerald-400">S/ 10.00</p>
+          </div>
+          <div class="w-5 h-5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xs font-bold">+</div>
+        </button>
 
-          <button onclick="addQuick('Cena', 10)" class="btn-quick p-3 rounded-xl text-left flex justify-between items-center">
-            <div>
-              <span class="block text-xs text-gray-400">🌙 Cena</span>
-              <span class="font-bold text-sm text-emerald-400">S/ 10.00</span>
-            </div>
-            <span class="text-lg text-emerald-500 font-bold">+</span>
-          </button>
+        <button type="button" onclick="quickAdd('Desayuno', 3.00, 'Desayuno')" class="flex items-center justify-between p-2 bg-slate-800/90 hover:bg-slate-800 border border-slate-700/70 rounded-xl transition-all active:scale-95 text-left">
+          <div>
+            <p class="text-[11px] text-slate-400 font-medium">☕ Desayuno</p>
+            <p class="text-xs font-bold text-emerald-400">S/ 3.00</p>
+          </div>
+          <div class="w-5 h-5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xs font-bold">+</div>
+        </button>
 
-          <button onclick="addQuick('Pasaje', 2)" class="btn-quick p-3 rounded-xl text-left flex justify-between items-center">
-            <div>
-              <span class="block text-xs text-gray-400">🚌 Pasaje</span>
-              <span class="font-bold text-sm text-emerald-400">S/ 2.00</span>
-            </div>
-            <span class="text-lg text-emerald-500 font-bold">+</span>
-          </button>
-        </div>
+        <button type="button" onclick="quickAdd('Pasajes', 2.00, 'Pasaje')" class="flex items-center justify-between p-2 bg-slate-800/90 hover:bg-slate-800 border border-slate-700/70 rounded-xl transition-all active:scale-95 text-left">
+          <div>
+            <p class="text-[11px] text-slate-400 font-medium">🚌 Pasaje</p>
+            <p class="text-xs font-bold text-emerald-400">S/ 2.00</p>
+          </div>
+          <div class="w-5 h-5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xs font-bold">+</div>
+        </button>
       </div>
+    </div>
 
-      <!-- Formulario Manual -->
-      <div class="card p-4 rounded-2xl space-y-3">
-        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Registrar Otro Gasto</h2>
+    <!-- REGISTRO MANUAL -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
+      <h2 class="text-xs font-bold text-slate-200 uppercase tracking-wider mb-3 flex items-center">
+        <i data-lucide="plus-circle" class="w-4 h-4 mr-1.5 text-emerald-400"></i> Registrar Gasto Manual
+      </h2>
+
+      <div class="space-y-3">
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="text-xs text-gray-400 block mb-1">Fecha</label>
-            <input type="date" id="input-date" class="w-full bg-[#162447] border border-[#223668] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500">
+            <label class="block text-[11px] text-slate-400 font-medium mb-1">Fecha</label>
+            <input type="date" id="expenseDate" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-emerald-500">
           </div>
           <div>
-            <label class="text-xs text-gray-400 block mb-1">Categoría</label>
-            <select id="input-cat" class="w-full bg-[#162447] border border-[#223668] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500">
-              <option value="Alimentación">🍲 Alimentación</option>
-              <option value="Pasaje">🚌 Pasaje</option>
-              <option value="Varios">🛒 Varios</option>
+            <label class="block text-[11px] text-slate-400 font-medium mb-1">Categoría</label>
+            <select id="expenseCategory" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2 py-2 text-xs font-medium text-white focus:outline-none focus:border-emerald-500">
+              <option value="Almuerzo" selected>🍲 Almuerzo</option>
+              <option value="Cena">🌙 Cena</option>
+              <option value="Desayuno">☕ Desayuno</option>
+              <option value="Pasajes">🚌 Pasajes</option>
+              <option value="Varios/Otros">🛒 Varios / Otros</option>
             </select>
           </div>
         </div>
 
-        <div>
-          <label class="text-xs text-gray-400 block mb-1">Concepto / Detalle</label>
-          <input type="text" id="input-desc" placeholder="Ej: Menú 10 soles, taxi..." class="w-full bg-[#162447] border border-[#223668] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500">
+        <div class="grid grid-cols-12 gap-2">
+          <div class="col-span-7">
+            <label class="block text-[11px] text-slate-400 font-medium mb-1">Concepto / Detalle</label>
+            <input type="text" id="expenseConcept" placeholder="Ej: Menú 10 soles, taxi..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+          </div>
+          <div class="col-span-5">
+            <label class="block text-[11px] text-slate-400 font-medium mb-1">Monto (S/)</label>
+            <div class="relative">
+              <span class="absolute left-2.5 top-2.5 text-xs text-slate-400 font-bold">S/</span>
+              <input type="number" id="expenseAmount" step="0.10" min="0.10" placeholder="0.00" class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-2 py-2 text-xs font-bold text-emerald-400 focus:outline-none focus:border-emerald-500">
+            </div>
+          </div>
         </div>
 
-        <div>
-          <label class="text-xs text-gray-400 block mb-1">Monto (S/)</label>
-          <input type="number" step="0.5" id="input-amount" placeholder="0.00" class="w-full bg-[#162447] border border-[#223668] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500">
-        </div>
-
-        <button onclick="addManual()" class="w-full btn-green py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow active:scale-98 transition">
-          Guardar Gasto
+        <button type="button" onclick="handleExpenseSave()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-1.5 active:scale-98">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span class="text-xs uppercase tracking-wider">Guardar Gasto</span>
         </button>
-      </div>
-
-      <!-- Lista de Gastos de Hoy -->
-      <div class="card p-4 rounded-2xl space-y-3">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Gastos Registrados Hoy</h2>
-          <span id="today-total" class="text-xs font-bold text-emerald-400">Total: S/ 0.00</span>
-        </div>
-        <div id="today-list" class="space-y-2">
-          <!-- Ítems agregados dinámicamente -->
-        </div>
       </div>
     </div>
 
-    <!-- VISTA 2: HISTORIAL COMPLETO DÍA POR DÍA -->
-    <div id="view-historial" class="hidden space-y-4">
-      <div class="flex justify-between items-center px-1">
-        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Historial Organizado por Fechas</h2>
-        <button onclick="exportPDF()" class="text-xs text-emerald-400 underline font-semibold">Descargar PDF</button>
-      </div>
-      <div id="history-container" class="space-y-3">
-        <!-- Bloques agrupados por día -->
-      </div>
-    </div>
+    <!-- CONTENIDO DE PESTAÑAS -->
+    <div id="tabContent">
 
-    <!-- VISTA 3: RESUMEN MENSUAL -->
-    <div id="view-mes" class="hidden space-y-4">
-      <div class="card p-4 rounded-2xl space-y-3">
-        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Resumen Total del Mes</h2>
-        <div class="flex justify-between items-center pt-1 border-b border-gray-800 pb-3">
-          <span class="text-sm text-gray-300">Gasto Total Acumulado:</span>
-          <span id="month-total" class="text-xl font-black text-emerald-400">S/ 0.00</span>
+      <!-- VISTA 1: HOY / FILTRO POR FECHA -->
+      <div id="viewHoy" class="space-y-3">
+        <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl px-3 py-2">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs text-slate-400">Ver día:</span>
+            <input type="date" id="filterHoyDate" onchange="renderHoyView()" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-emerald-400 font-bold focus:outline-none">
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 block">Subtotal Día</span>
+            <span id="todayTotalDisplay" class="text-sm font-extrabold text-amber-400">S/ 0.00</span>
+          </div>
         </div>
-        <button onclick="exportPDF()" class="w-full bg-slate-700 text-white text-xs py-2.5 rounded-xl font-semibold active:scale-95 transition">
-          📄 Descargar Reporte Completo PDF
-        </button>
+
+        <div id="todayExpensesList" class="space-y-2">
+        </div>
       </div>
+
+      <!-- VISTA 2: HISTORIAL DÍA POR DÍA -->
+      <div id="viewHistorial" class="hidden space-y-3">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-md space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Historial Día por Día</h3>
+              <p class="text-[10px] text-slate-400">Toca el ícono 🗑️ para corregir o borrar un gasto</p>
+            </div>
+            <div class="flex space-x-1">
+              <button type="button" onclick="copyToClipboardText()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center space-x-1 border border-slate-700">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                <span>Copiar Texto</span>
+              </button>
+              <button type="button" onclick="exportCyclePDF()" class="p-1.5 bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/50 text-rose-300 rounded-xl text-xs font-semibold" title="Descargar PDF">
+                <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <div id="historyDayByDayList" class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA 3: RESUMEN DEL MES Y CICLOS -->
+      <div id="viewMes" class="hidden space-y-3">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-4">
+          
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Resumen General del Mes</h3>
+              <p class="text-[10px] text-slate-400">Acumulado total de 30 días</p>
+            </div>
+            <button type="button" onclick="exportMonthPDF()" class="px-3 py-1.5 bg-rose-900/80 hover:bg-rose-800 border border-rose-700 text-rose-100 rounded-xl text-xs font-bold flex items-center space-x-1">
+              <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+              <span>Descargar PDF Mes</span>
+            </button>
+          </div>
+
+          <div class="p-3 bg-slate-950 rounded-xl border border-emerald-500/30 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-slate-400 font-medium">Total Gastado en el Mes</p>
+              <p id="monthTotalDisplay" class="text-2xl font-extrabold text-emerald-400 mt-0.5">S/ 0.00</p>
+            </div>
+            <div class="text-right">
+              <p class="text-[10px] text-slate-500">Ciclos Registrados</p>
+              <p id="totalCyclesCount" class="text-base font-bold text-slate-300">0</p>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Desglose de Ciclos de S/ 100</h4>
+            <div id="monthCyclesList" class="space-y-2 max-h-[350px] overflow-y-auto">
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
 
   </main>
 
+  <!-- PLANTILLA OCULTA PARA GENERAR REPORTES EN PDF -->
+  <div class="hidden">
+    <div id="pdfReportContainer" class="p-6 bg-white text-slate-900 font-sans leading-relaxed" style="width: 750px;">
+      <div id="pdfReportContent"></div>
+    </div>
+  </div>
+
+  <!-- MODAL DE AJUSTES Y PRIVACIDAD -->
+  <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center">
+          <i data-lucide="shield-check" class="w-5 h-5 mr-2 text-emerald-400"></i> Opciones y Privacidad
+        </h3>
+        <button type="button" onclick="toggleSettingsModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs text-slate-300">
+        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
+          <p class="font-bold text-emerald-400">🔒 Datos Privados y Locales</p>
+          <p class="text-slate-400">Todos los registros se quedan exclusivamente guardados en la memoria de tu celular.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Monto Base por Ciclo (S/)</label>
+          <div class="flex space-x-2">
+            <input type="number" id="customBudgetInput" value="100" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white">
+            <button type="button" onclick="saveCustomBudget()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl font-bold">Guardar</button>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-800 space-y-2">
+          <button type="button" onclick="confirmResetAll()" class="w-full bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/50 text-rose-300 font-semibold py-2 px-3 rounded-xl flex items-center justify-center space-x-2">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <span>Borrar Todo el Historial</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button type="button" onclick="toggleSettingsModal()" class="w-full bg-slate-800 text-slate-300 font-bold py-2 rounded-xl text-xs">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST DE NOTIFICACIÓN -->
+  <div id="toastNotification" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xl transition-all duration-300 opacity-0 pointer-events-none z-50">
+    ¡Operación realizada!
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SCRIPT CON TODA LA LÓGICA E INTERACTIVIDAD -->
+  <!-- ========================================== -->
   <script>
-    // ESTADO DE LA APLICACIÓN
-    let state = {
-      budget: 100,
-      expenses: []
-    };
-
-    // INICIALIZACIÓN SEGURA
-    window.onload = function() {
-      loadLocalStorage();
-      setTodayDate();
-      renderAll();
-    };
-
-    function setTodayDate() {
-      const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const dateStr = now.toLocaleDateString('es-PE', options);
-      document.getElementById('header-date').innerText = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
-
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      document.getElementById('input-date').value = `${yyyy}-${mm}-${dd}`;
-    }
-
-    function loadLocalStorage() {
-      try {
-        const saved = localStorage.getItem('control_gastos_data_v2');
-        if (saved) {
-          state = JSON.parse(saved);
+    const STORAGE_KEY = 'priv_expenses_app_data_v2';
+    
+    let appData = {
+      baseBudget: 100,
+      activeCycleId: 1,
+      cycles: [
+        {
+          id: 1,
+          name: 'Ciclo 1',
+          budget: 100,
+          startDate: getTodayFormatted(),
+          expenses: []
         }
-      } catch (e) {
-        console.error("Error al cargar localStorage", e);
-      }
+      ]
+    };
+
+    function getTodayFormatted() {
+      const today = new Date();
+      return today.toISOString().split('T')[0];
     }
 
-    function saveLocalStorage() {
-      try {
-        localStorage.setItem('control_gastos_data_v2', JSON.stringify(state));
-      } catch (e) {
-        console.error("Error al guardar localStorage", e);
-      }
+    // Formatear fechas para encabezados elegantes: "LUNES, 21 DE SETIEMBRE"
+    function formatLongDate(dateStr) {
+      if (!dateStr) return '';
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+      
+      const options = { weekday: 'long', day: 'numeric', month: 'long' };
+      let formatted = dateObj.toLocaleDateString('es-PE', options).toUpperCase();
+      
+      // Reemplazo estándar de septiembre por setiembre si se prefiere
+      formatted = formatted.replace('SEPTIEMBRE', 'SETIEMBRE');
+      return formatted;
     }
 
-    // CAMBIO DE PESTAÑAS
-    function switchTab(tab) {
-      document.getElementById('view-hoy').classList.add('hidden');
-      document.getElementById('view-historial').classList.add('hidden');
-      document.getElementById('view-mes').classList.add('hidden');
+    function initApp() {
+      loadData();
+      
+      const todayStr = getTodayFormatted();
+      document.getElementById('expenseDate').value = todayStr;
+      document.getElementById('filterHoyDate').value = todayStr;
+      
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('headerDateText').textContent = new Date().toLocaleDateString('es-PE', options);
 
-      document.getElementById('tab-hoy').classList.remove('tab-active');
-      document.getElementById('tab-historial').classList.remove('tab-active');
-      document.getElementById('tab-mes').classList.remove('tab-active');
-
-      if (tab === 'hoy') {
-        document.getElementById('view-hoy').classList.remove('hidden');
-        document.getElementById('tab-hoy').classList.add('tab-active');
-      } else if (tab === 'historial') {
-        document.getElementById('view-historial').classList.remove('hidden');
-        document.getElementById('tab-historial').classList.add('tab-active');
-      } else if (tab === 'mes') {
-        document.getElementById('view-mes').classList.remove('hidden');
-        document.getElementById('tab-mes').classList.add('tab-active');
-      }
-    }
-
-    // REGISTRO DE GASTOS
-    function addQuick(desc, amount) {
-      const dateVal = document.getElementById('input-date').value || new Date().toISOString().split('T')[0];
-      const newExp = {
-        id: Date.now(),
-        date: dateVal,
-        concept: desc,
-        category: 'Alimentación',
-        amount: parseFloat(amount)
-      };
-      state.expenses.push(newExp);
-      saveLocalStorage();
       renderAll();
     }
 
-    function addManual() {
-      const dateVal = document.getElementById('input-date').value;
-      const catVal = document.getElementById('input-cat').value;
-      const descVal = document.getElementById('input-desc').value.trim();
-      const amountVal = parseFloat(document.getElementById('input-amount').value);
+    function loadData() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          appData = JSON.parse(saved);
+        }
+      } catch(e) {
+        console.error("Error al cargar datos", e);
+      }
+    }
 
-      if (!dateVal || isNaN(amountVal) || amountVal <= 0) {
-        alert("Por favor ingresa un monto válido mayor a 0.");
+    function saveData() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      } catch(e) {
+        console.error("Error al guardar datos", e);
+      }
+    }
+
+    function getActiveCycle() {
+      return appData.cycles.find(c => c.id === appData.activeCycleId) || appData.cycles[0];
+    }
+
+    function renderAll() {
+      renderCycleHeader();
+      renderHoyView();
+      renderHistorialView();
+      renderMesView();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderCycleHeader() {
+      const activeCycle = getActiveCycle();
+      const totalSpent = activeCycle.expenses.reduce((sum, e) => sum + e.amount, 0);
+      const remaining = activeCycle.budget - totalSpent;
+      const percent = Math.min(100, Math.round((totalSpent / activeCycle.budget) * 100)) || 0;
+
+      document.getElementById('cycleLabel').textContent = activeCycle.name;
+      document.getElementById('cycleBudgetDisplay').textContent = activeCycle.budget.toFixed(2);
+      document.getElementById('remainingDisplay').textContent = `S/ ${remaining.toFixed(2)}`;
+      document.getElementById('cycleSpentDisplay').textContent = `S/ ${totalSpent.toFixed(2)}`;
+      document.getElementById('progressPercent').textContent = `${percent}%`;
+      
+      const pBar = document.getElementById('progressBar');
+      pBar.style.width = `${percent}%`;
+      if (percent >= 90) {
+        pBar.className = "h-full bg-gradient-to-r from-amber-500 to-rose-500 rounded-full transition-all duration-500";
+      } else {
+        pBar.className = "h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500";
+      }
+
+      const selector = document.getElementById('cycleSelector');
+      selector.innerHTML = '';
+      appData.cycles.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} (${c.startDate})`;
+        if (c.id === appData.activeCycleId) opt.selected = true;
+        selector.appendChild(opt);
+      });
+    }
+
+    function changeCycle(id) {
+      appData.activeCycleId = parseInt(id);
+      saveData();
+      renderAll();
+      showToast("Ciclo cambiado");
+    }
+
+    function startNewCycle() {
+      const newId = appData.cycles.length + 1;
+      const newCycle = {
+        id: newId,
+        name: `Ciclo ${newId}`,
+        budget: appData.baseBudget || 100,
+        startDate: getTodayFormatted(),
+        expenses: []
+      };
+      appData.cycles.unshift(newCycle);
+      appData.activeCycleId = newId;
+      saveData();
+      renderAll();
+      showToast("¡Nuevo ciclo de S/ 100 iniciado!");
+    }
+
+    function handleExpenseSave() {
+      const date = document.getElementById('expenseDate').value || getTodayFormatted();
+      const category = document.getElementById('expenseCategory').value;
+      const concept = document.getElementById('expenseConcept').value.trim() || category;
+      const amount = parseFloat(document.getElementById('expenseAmount').value);
+
+      if (isNaN(amount) || amount <= 0) {
+        alert("Ingresa un monto válido mayor a 0");
         return;
       }
 
-      const newExp = {
+      const activeCycle = getActiveCycle();
+      const newExpense = {
         id: Date.now(),
-        date: dateVal,
-        concept: descVal || catVal,
-        category: catVal,
-        amount: amountVal
+        date: date,
+        category: category,
+        concept: concept,
+        amount: amount
       };
 
-      state.expenses.push(newExp);
-      saveLocalStorage();
+      activeCycle.expenses.unshift(newExpense);
+      saveData();
+
+      document.getElementById('expenseConcept').value = '';
+      document.getElementById('expenseAmount').value = '';
+
       renderAll();
-
-      document.getElementById('input-desc').value = '';
-      document.getElementById('input-amount').value = '';
+      showToast("Gasto guardado con éxito");
     }
 
-    // ELIMINAR GASTO EN 1 TOQUE
-    function deleteExpense(id) {
-      state.expenses = state.expenses.filter(item => item.id !== id);
-      saveLocalStorage();
+    function quickAdd(category, amount, concept) {
+      const date = getTodayFormatted();
+      const activeCycle = getActiveCycle();
+      
+      const newExpense = {
+        id: Date.now(),
+        date: date,
+        category: category,
+        concept: concept,
+        amount: amount
+      };
+
+      activeCycle.expenses.unshift(newExpense);
+      saveData();
       renderAll();
+      showToast(`+ S/ ${amount.toFixed(2)} registrado (${category})`);
     }
 
-    function resetCycle() {
-      if (confirm("¿Deseas iniciar un nuevo ciclo de S/ 100? El historial de días anteriores se mantendrá guardado.")) {
-        state.budget = 100;
-        saveLocalStorage();
-        renderAll();
-      }
+    function deleteExpense(expenseId) {
+      if (!confirm("¿Deseas eliminar este gasto?")) return;
+      const activeCycle = getActiveCycle();
+      activeCycle.expenses = activeCycle.expenses.filter(e => e.id !== expenseId);
+      saveData();
+      renderAll();
+      showToast("Gasto eliminado");
     }
 
-    // RENDERIZADO PRINCIPAL
-    function renderAll() {
-      const totalSpent = state.expenses.reduce((acc, curr) => acc + curr.amount, 0);
-      const disp = state.budget - totalSpent;
-      const pct = Math.min(Math.max((totalSpent / state.budget) * 100, 0), 100);
-
-      document.getElementById('gast-val').innerText = `S/ ${totalSpent.toFixed(2)}`;
-      document.getElementById('disp-val').innerText = `S/ ${disp.toFixed(2)}`;
-      document.getElementById('progress-bar').style.width = `${pct}%`;
-      document.getElementById('month-total').innerText = `S/ ${totalSpent.toFixed(2)}`;
-
-      renderTodayList();
-      renderHistory();
-    }
-
-    function renderTodayList() {
-      const todayStr = document.getElementById('input-date').value || new Date().toISOString().split('T')[0];
-      const todayList = document.getElementById('today-list');
-      todayList.innerHTML = '';
-
-      const items = state.expenses.filter(x => x.date === todayStr);
-      let daySum = 0;
-
-      if (items.length === 0) {
-        todayList.innerHTML = `<p class="text-xs text-gray-500 italic py-2 text-center">No hay gastos registrados hoy.</p>`;
-      } else {
-        items.forEach(item => {
-          daySum += item.amount;
-          const el = document.createElement('div');
-          el.className = 'flex justify-between items-center bg-[#162447] p-2.5 rounded-xl border border-[#223668]';
-          el.innerHTML = `
-            <div>
-              <span class="block text-xs font-semibold text-gray-200">${item.concept}</span>
-              <span class="text-[10px] text-gray-400">${item.category}</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="font-bold text-xs text-emerald-400">S/ ${item.amount.toFixed(2)}</span>
-              <button onclick="deleteExpense(${item.id})" class="text-red-400 hover:text-red-300 font-bold p-1 text-sm active:scale-90 transition" title="Eliminar">🗑️</button>
-            </div>
-          `;
-          todayList.appendChild(el);
-        });
-      }
-
-      document.getElementById('today-total').innerText = `Total Hoy: S/ ${daySum.toFixed(2)}`;
-    }
-
-    function renderHistory() {
-      const container = document.getElementById('history-container');
+    function renderHoyView() {
+      const filterDate = document.getElementById('filterHoyDate').value || getTodayFormatted();
+      const activeCycle = getActiveCycle();
+      const expensesToday = activeCycle.expenses.filter(e => e.date === filterDate);
+      
+      const container = document.getElementById('todayExpensesList');
       container.innerHTML = '';
 
-      if (state.expenses.length === 0) {
-        container.innerHTML = `<p class="text-xs text-gray-500 italic py-4 text-center">Sin historial aún.</p>`;
+      const totalDay = expensesToday.reduce((acc, e) => acc + e.amount, 0);
+      document.getElementById('todayTotalDisplay').textContent = `S/ ${totalDay.toFixed(2)}`;
+
+      if (expensesToday.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-6 bg-slate-900/50 border border-slate-800/80 rounded-xl text-slate-500 text-xs">
+            No hay gastos registrados para la fecha ${filterDate}
+          </div>
+        `;
         return;
       }
 
-      // Agrupar por fecha
-      const groups = {};
-      state.expenses.forEach(item => {
-        if (!groups[item.date]) groups[item.date] = [];
-        groups[item.date].push(item);
+      expensesToday.forEach(e => {
+        container.innerHTML += `
+          <div class="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 rounded-xl shadow-sm">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 font-bold text-xs">
+                S/
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">${escapeHtml(e.concept)}</p>
+                <p class="text-[10px] text-slate-400">${e.category} • ${e.date}</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-extrabold text-emerald-400">S/ ${e.amount.toFixed(2)}</span>
+              <button onclick="deleteExpense(${e.id})" class="p-1 text-slate-500 hover:text-rose-400 transition-colors">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function renderHistorialView() {
+      const activeCycle = getActiveCycle();
+      const container = document.getElementById('historyDayByDayList');
+      container.innerHTML = '';
+
+      if (activeCycle.expenses.length === 0) {
+        container.innerHTML = `<p class="text-center py-4 text-xs text-slate-500">Sin gastos en este ciclo.</p>`;
+        return;
+      }
+
+      const grouped = {};
+      activeCycle.expenses.forEach(e => {
+        if (!grouped[e.date]) grouped[e.date] = [];
+        grouped[e.date].push(e);
       });
 
-      // Ordenar fechas descendente
-      const sortedDates = Object.keys(groups).sort().reverse();
-
-      sortedDates.forEach(dateStr => {
-        const items = groups[dateStr];
-        const dayTotal = items.reduce((a, c) => a + c.amount, 0);
-
-        const card = document.createElement('div');
-        card.className = 'card p-3 rounded-2xl space-y-2';
-
-        let itemsHtml = items.map(item => `
-          <div class="flex justify-between items-center py-1 border-b border-gray-800/50 last:border-0">
-            <span class="text-xs text-gray-300">${item.concept}</span>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-semibold text-gray-200">S/ ${item.amount.toFixed(2)}</span>
-              <button onclick="deleteExpense(${item.id})" class="text-red-400 p-0.5 text-xs">🗑️</button>
+      Object.keys(grouped).sort().reverse().forEach(date => {
+        const list = grouped[date];
+        const dayTotal = list.reduce((a, b) => a + b.amount, 0);
+        
+        let itemsHtml = list.map(item => `
+          <div class="flex items-center justify-between py-1.5 border-b border-slate-800/50 last:border-none">
+            <div>
+              <span class="text-xs text-slate-200 font-medium">${escapeHtml(item.concept)}</span>
+              <span class="text-[10px] text-slate-500 block">${item.category}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-slate-300">S/ ${item.amount.toFixed(2)}</span>
+              <button onclick="deleteExpense(${item.id})" class="text-slate-500 hover:text-rose-400">
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+              </button>
             </div>
           </div>
         `).join('');
 
-        card.innerHTML = `
-          <div class="flex justify-between items-center border-b border-gray-700 pb-1.5">
-            <span class="text-xs font-bold text-emerald-400">${dateStr}</span>
-            <span class="text-xs font-bold text-white">Total Día: S/ ${dayTotal.toFixed(2)}</span>
-          </div>
-          <div class="space-y-1">
-            ${itemsHtml}
+        container.innerHTML += `
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800/80 space-y-2">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+              <span class="text-xs font-bold text-emerald-400">${formatLongDate(date)}</span>
+              <span class="text-xs font-extrabold text-amber-400">Total: S/ ${dayTotal.toFixed(2)}</span>
+            </div>
+            <div class="space-y-1">
+              ${itemsHtml}
+            </div>
           </div>
         `;
-
-        container.appendChild(card);
       });
     }
 
-    // ENVIAR POR WHATSAPP
-    function sendWhatsApp() {
-      if (state.expenses.length === 0) {
-        alert("No hay gastos registrados para compartir.");
-        return;
+    function renderMesView() {
+      const container = document.getElementById('monthCyclesList');
+      container.innerHTML = '';
+
+      let globalTotal = 0;
+      document.getElementById('totalCyclesCount').textContent = appData.cycles.length;
+
+      appData.cycles.forEach(cycle => {
+        const cycleTotal = cycle.expenses.reduce((a, b) => a + b.amount, 0);
+        globalTotal += cycleTotal;
+
+        container.innerHTML += `
+          <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-white">${cycle.name}</p>
+              <p class="text-[10px] text-slate-400">Inicio: ${cycle.startDate} • ${cycle.expenses.length} registros</p>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-bold text-emerald-400">S/ ${cycleTotal.toFixed(2)}</span>
+              <span class="text-[10px] text-slate-500 block">de S/ ${cycle.budget.toFixed(2)}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById('monthTotalDisplay').textContent = `S/ ${globalTotal.toFixed(2)}`;
+    }
+
+    function switchTab(tab) {
+      document.getElementById('viewHoy').classList.add('hidden');
+      document.getElementById('viewHistorial').classList.add('hidden');
+      document.getElementById('viewMes').classList.add('hidden');
+
+      const btnHoy = document.getElementById('tabHoy');
+      const btnHist = document.getElementById('tabHistorial');
+      const btnMes = document.getElementById('tabMes');
+
+      [btnHoy, btnHist, btnMes].forEach(btn => {
+        btn.className = "py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1 text-slate-400 hover:text-slate-200";
+      });
+
+      if (tab === 'hoy') {
+        document.getElementById('viewHoy').classList.remove('hidden');
+        btnHoy.className = "py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1 bg-emerald-600 text-white shadow";
+      } else if (tab === 'historial') {
+        document.getElementById('viewHistorial').classList.remove('hidden');
+        btnHist.className = "py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1 bg-emerald-600 text-white shadow";
+      } else if (tab === 'mes') {
+        document.getElementById('viewMes').classList.remove('hidden');
+        btnMes.className = "py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1 bg-emerald-600 text-white shadow";
+      }
+    }
+
+    // FORMATO PARA ENVIAR POR WHATSAPP AGRUPADO POR DÍAS (Lunes 24, tanto en almuerzo, etc.)
+    function shareWhatsApp() {
+      const activeCycle = getActiveCycle();
+      const totalSpent = activeCycle.expenses.reduce((a, b) => a + b.amount, 0);
+      const remaining = activeCycle.budget - totalSpent;
+
+      let msg = `*Reporte de Gastos - ${activeCycle.name}*\n`;
+      msg += `Presupuesto: S/ ${activeCycle.budget.toFixed(2)}\n`;
+      msg += `Total Gastado: S/ ${totalSpent.toFixed(2)}\n`;
+      msg += `Saldo Restante: S/ ${remaining.toFixed(2)}\n\n`;
+      msg += `*Detalle de Gasto por Día*\n\n`;
+
+      if (activeCycle.expenses.length === 0) {
+        msg += `Sin gastos registrados.\n`;
+      } else {
+        const grouped = {};
+        activeCycle.expenses.forEach(e => {
+          if (!grouped[e.date]) grouped[e.date] = [];
+          grouped[e.date].push(e);
+        });
+
+        Object.keys(grouped).sort().forEach(date => {
+          const list = grouped[date];
+          const dayTotal = list.reduce((a, b) => a + b.amount, 0);
+          msg += `📌 *${formatLongDate(date)}* | Total Día: S/ ${dayTotal.toFixed(2)}\n`;
+          list.forEach(e => {
+            const detailText = (e.concept && e.concept !== e.category) ? `${e.category} (${e.concept})` : e.category;
+            msg += `   • ${detailText}: S/ ${e.amount.toFixed(2)}\n`;
+          });
+          msg += `\n`;
+        });
       }
 
-      let msg = `*📊 RESUMEN DE GASTOS PRIVADO*\n`;
-      msg += ` Presupuesto: S/ ${state.budget.toFixed(2)}\n\n`;
-
-      const groups = {};
-      state.expenses.forEach(item => {
-        if (!groups[item.date]) groups[item.date] = [];
-        groups[item.date].push(item);
-      });
-
-      let grandTotal = 0;
-      Object.keys(groups).sort().forEach(dateStr => {
-        const items = groups[dateStr];
-        const dayTotal = items.reduce((a, c) => a + c.amount, 0);
-        grandTotal += dayTotal;
-
-        msg += `📅 *${dateStr}*\n`;
-        items.forEach(i => {
-          msg += `  • ${i.concept}: S/ ${i.amount.toFixed(2)}\n`;
-        });
-        msg += `  👉 *Total Día: S/ ${dayTotal.toFixed(2)}*\n\n`;
-      });
-
-      msg += `💰 *TOTAL GASTADO: S/ ${grandTotal.toFixed(2)}*\n`;
-      msg += `💵 *DISPONIBLE: S/ ${(state.budget - grandTotal).toFixed(2)}*`;
-
-      const encoded = encodeURIComponent(msg);
-      window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
     }
 
-    // EXPORTAR A PDF
-    function exportPDF() {
-      const element = document.createElement('div');
-      element.style.padding = '20px';
-      element.style.color = '#000';
-      element.style.backgroundColor = '#fff';
+    function copyToClipboardText() {
+      const activeCycle = getActiveCycle();
+      const totalSpent = activeCycle.expenses.reduce((a, b) => a + b.amount, 0);
+      const remaining = activeCycle.budget - totalSpent;
 
-      let html = `<h1 style="font-size:18px; font-weight:bold;">Reporte de Gastos Diarios</h1>`;
-      html += `<p style="font-size:12px;">Presupuesto Ciclo: S/ ${state.budget.toFixed(2)}</p><hr><br>`;
+      let text = `Reporte de Gastos - ${activeCycle.name}\n`;
+      text += `Presupuesto: S/ ${activeCycle.budget.toFixed(2)}\n`;
+      text += `Total Gastado: S/ ${totalSpent.toFixed(2)}\n`;
+      text += `Saldo Restante: S/ ${remaining.toFixed(2)}\n\n`;
+      text += `Detalle de Gasto por Día:\n\n`;
 
-      const groups = {};
-      state.expenses.forEach(item => {
-        if (!groups[item.date]) groups[item.date] = [];
-        groups[item.date].push(item);
+      const grouped = {};
+      activeCycle.expenses.forEach(e => {
+        if (!grouped[e.date]) grouped[e.date] = [];
+        grouped[e.date].push(e);
       });
 
-      let grandTotal = 0;
-      Object.keys(groups).sort().forEach(dateStr => {
-        const items = groups[dateStr];
-        const dayTotal = items.reduce((a, c) => a + c.amount, 0);
-        grandTotal += dayTotal;
-
-        html += `<h3 style="font-size:14px; margin-bottom:5px;">📅 Fecha: ${dateStr}</h3><ul>`;
-        items.forEach(i => {
-          html += `<li>${i.concept} (${i.category}): S/ ${i.amount.toFixed(2)}</li>`;
+      Object.keys(grouped).sort().forEach(date => {
+        const list = grouped[date];
+        const dayTotal = list.reduce((a, b) => a + b.amount, 0);
+        text += `[ ${formatLongDate(date)} ] - Total Día: S/ ${dayTotal.toFixed(2)}\n`;
+        list.forEach(e => {
+          const detailText = (e.concept && e.concept !== e.category) ? `${e.category} (${e.concept})` : e.category;
+          text += `  • ${detailText}: S/ ${e.amount.toFixed(2)}\n`;
         });
-        html += `</ul><p><strong>Subtotal Día: S/ 
+        text += `\n`;
+      });
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Reporte copiado al portapapeles");
+      });
+    }
+
+    // DISEÑO DEL PDF IDÉNTICO A LA IMAGEN PROPORCIONADA
+    function exportCyclePDF() {
+      const activeCycle = getActiveCycle();
+      const content = document.getElementById('pdfReportContent');
+      const totalSpent = activeCycle.expenses.reduce((a, b) => a + b.amount, 0);
+      const remaining = activeCycle.budget - totalSpent;
+
+      const grouped = {};
+      activeCycle.expenses.forEach(e => {
+        if (!grouped[e.date]) grouped[e.date] = [];
+        grouped[e.date].push(e);
+      });
+
+      let daysHtml = '';
+      const dates = Object.keys(grouped).sort();
+
+      if (dates.length === 0) {
+        daysHtml = `<p style="font-size: 11px; color: #666; padding: 10px 0;">No se registraron gastos en este ciclo.</p>`;
+      } else {
+        dates.forEach(date => {
+          const list = grouped[date];
+          const dayTotal = list.reduce((a, b) => a + b.amount, 0);
+
+          let rowsHtml = list.map(item => {
+            const detailText = (item.concept && item.concept !== item.category) ? `${item.category} (${escapeHtml(item.concept)})` : item.category;
+            return `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; font-size: 11px; color: #475569;">
+                <span>${detailText}</span>
+                <span style="font-weight: 600; color: #334155;">S/ ${item.amount.toFixed(2)}</span>
+              </div>
+            `;
+          }).join('');
+
+          daysHtml += `
+            <div style="margin-bottom: 12px; font-family: system-ui, -apple-system, sans-serif;">
+              <!-- Cabecera del Día -->
+              <div style="background-color: #f1f5f9; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px;">
+                <span style="font-size: 11px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 4px;">
+                  <span style="color: #e11d48; font-size: 10px;">📍</span> ${formatLongDate(date)}
+                </span>
+                <span style="font-size: 11px; font-weight: 700; color: #f97316;">
+                  Total Día: S/ ${dayTotal.toFixed(2)}
+                </span>
+              </div>
+              <!-- Lista de ítems del día -->
+              <div style="background-color: #ffffff;">
+                ${rowsHtml}
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      content.innerHTML = `
+        <div style="font-family: system-ui, -apple-system, sans-serif; padding: 10px; color: #1e293b;">
+          <!-- Título -->
+          <h2 style="font-size: 18px; font-weight: 600; color: #334155; margin: 0 0 4px 0;">Reporte de Gastos - ${activeCycle.name}</h2>
+          <p style="font-size: 10px; color: #94a3b8; margin: 0 0 12px 0;">Emisión: ${activeCycle.startDate}</p>
+          
+          <div style="border-top: 2px solid #10b981; margin-bottom: 12px;"></div>
+
+          <!-- Resumen Verde Menta -->
+          <div style="background-color: #f0fdf4; border-radius: 6px; padding: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 11px; border: 1px solid #dcfce7;">
+            <div>
+              <span style="color: #475569;">Presupuesto:</span> 
+              <strong style="color: #1e293b;">S/ ${activeCycle.budget.toFixed(2)}</strong>
+            </div>
+            <div>
+              <span style="color: #475569;">Total Gastado:</span> 
+              <strong style="color: #1e293b;">S/ ${totalSpent.toFixed(2)}</strong>
+            </div>
+            <div>
+              <span style="color: #475569;">Saldo Restante:</span> 
+              <strong style="color: #1e293b;">S/ ${remaining.toFixed(2)}</strong>
+            </div>
+          </div>
+
+          <!-- Subtítulo de Detalle -->
+          <h3 style="font-size: 12px; font-weight: 600; color: #64748b; margin: 0 0 10px 0;">Detalle de Gasto por Día</h3>
+
+          <!-- Bloque de Gastos -->
+          <div>
+            ${daysHtml}
+          </div>
+        </div>
+      `;
+
+      const element = document.getElementById('pdfReportContainer');
+      const opt = {
+        margin: [0.3, 0.3, 0.3, 0.3],
+        filename: `Reporte_Gastos_${activeCycle.name}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function exportMonthPDF() {
+      const content = document.getElementById('pdfReportContent');
+      let globalTotal = 0;
+
+      let html = `
+        <div style="font-family: system-ui, -apple-system, sans-serif; padding: 10px; color: #1e293b;">
+          <h2 style="font-size: 18px; font-weight: 600; color: #334155; margin-0 0 12px 0;">Resumen Consolidado del Mes</h2>
+          <div style="border-top: 2px solid #10b981; margin-bottom: 16px;"></div>
+      `;
+
+      appData.cycles.forEach(c => {
+        const cTotal = c.expenses.reduce((a, b) => a + b.amount, 0);
+        globalTotal += cTotal;
+        html += `
+          <div style="margin-bottom: 12px; padding: 10px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
+            <h3 style="font-size: 13px; font-weight: 700; color: #334155; margin: 0 0 4px 0;">${c.name} (${c.startDate})</h3>
+            <p style="font-size: 11px; color: #64748b; margin: 0;">Gastado: <strong style="color: #059669;">S/ ${cTotal.toFixed(2)}</strong> de S/ ${c.budget.toFixed(2)}</p>
+          </div>
+        `;
+      });
+
+      html += `
+          <div style="background-color: #f0fdf4; border: 1px solid #dcfce7; padding: 12px; border-radius: 6px; margin-top: 16px;">
+            <h3 style="font-size: 14px; font-weight: 700; color: #166534; margin: 0;">TOTAL GASTADO EN EL MES: S/ ${globalTotal.toFixed(2)}</h3>
+          </div>
+        </div>
+      `;
+      content.innerHTML = html;
+
+      const element = document.getElementById('pdfReportContainer');
+      const opt = {
+        margin: [0.3, 0.3, 0.3, 0.3],
+        filename: `Resumen_Mes.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function toggleSettingsModal() {
+      const modal = document.getElementById('settingsModal');
+      modal.classList.toggle('hidden');
+    }
+
+    function saveCustomBudget() {
+      const val = parseFloat(document.getElementById('customBudgetInput').value);
+      if (!isNaN(val) && val > 0) {
+        appData.baseBudget = val;
+        saveData();
+        showToast("Presupuesto base actualizado");
+        toggleSettingsModal();
+      }
+    }
+
+    function confirmResetAll() {
+      if (confirm("¿ATENCIÓN: Quieres borrar absolutamente todos los gastos e historial de la app?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2500);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Inicializar app al cargar ventana
+    window.onload = initApp;
+  </script>
+</body>
+</html>
